@@ -51,6 +51,21 @@ class _HomeState extends State<Home> {
     });
   }
 
+  Future<Null> _refresh() async { //24 - declarando a função para ordenar a lista pelos itens "checked"
+    await Future.delayed(Duration(seconds: 1)); //25 aguardando 1s para ordenar
+
+    setState(() {
+      _toDoList.sort((a, b){
+        if(a["ok"] && !b["ok"]) return 1;
+        else if (!a["ok"] && b["ok"]) return -1;
+        else return 0;
+      });
+
+      _saveData();
+    });
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold( // L1 - Iniciando o layout
@@ -84,10 +99,13 @@ class _HomeState extends State<Home> {
             ),
           ),
           Expanded( //L7 - gerencia o tamanho da lista que aparece na tela
-            child: ListView.builder( //L8 - renderiza elementos que estão sendo mostrados
-                padding: EdgeInsets.only(top: 10.0), //L9 - distancia da list e Row
-                itemCount: _toDoList.length,
-                itemBuilder: buildItem),
+            child: RefreshIndicator( // L21 - refresh para ordenar a lista pelos itens checked
+              onRefresh: _refresh,
+              child: ListView.builder( //L8 - renderiza elementos que estão sendo mostrados
+                  padding: EdgeInsets.only(top: 10.0), //L9 - distancia da list e Row
+                  itemCount: _toDoList.length,
+                  itemBuilder: buildItem),
+            ),
           )
         ],
       ),
@@ -140,7 +158,8 @@ class _HomeState extends State<Home> {
                 }),
             duration: Duration(seconds: 4),
           );
-          Scaffold.of(context).showSnackBar(snack);
+          Scaffold.of(context).removeCurrentSnackBar(); //remove a snackbar anterior
+          Scaffold.of(context).showSnackBar(snack); //mostra a snackbar do item removido
         });
       }, //L15 - função ao remover item
     );
